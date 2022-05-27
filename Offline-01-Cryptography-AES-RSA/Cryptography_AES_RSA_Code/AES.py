@@ -14,10 +14,7 @@ class AES:
         else:
             self.Nr = 10
         self.setKey(key)
-    def setPlainText(self, plainText):
-        self.plainText = plainText
-    def getPlainText(self):
-        print(self.plainText)
+
     def setKey(self, key):
         byteMatrix1D = [ord(i) for i in key]
         word2D = self.matrix1D_to_matrix2D(byteMatrix1D)
@@ -100,8 +97,8 @@ class AES:
         return temp
 
 
-    def encryption(self):
-        stateMatrix1D = [ord(i) for i in self.plainText]
+    def encryption(self, plainText):
+        stateMatrix1D = [ord(i) for i in plainText]
         stateMatrix2D = self.matrix1D_to_matrix2D(stateMatrix1D)
         stateMatrixCol2D = self.transposeMatrix(stateMatrix2D)
 
@@ -122,16 +119,16 @@ class AES:
                 if i != self.Nr:
                     stateMatrixCol2D = self.mixColumns(stateMatrixCol2D)
                 stateMatrixCol2D = self.addRoundKey(stateMatrixCol2D, self.transposeMatrix(self.roundKeys[i]))
-            print("After Round ", i)
-            self.printInHex(stateMatrixCol2D)
-        self.ciperText = self.transposeMatrix(stateMatrixCol2D)
-        self.retrieveText(self.ciperText)
+            # print("After Encryption Round ", i)
+            # self.printInHex(stateMatrixCol2D)
+        ciperText = self.transposeMatrix(stateMatrixCol2D)
+        return self.retrieveText(ciperText)
 
-    def getCipherText(self):
+    def printCipherText(self, cipherText):
         print("Ciphertext")
         for j in range(0, 4):
             for k in range(0, 4):
-                print(hex(self.ciperText[j][k])[2:], end="\t")
+                print(hex(cipherText[j][k])[2:], end="\t")
         print()
     def shiftRows(self, matrix2D):
         temp = copy.deepcopy(matrix2D)
@@ -167,10 +164,10 @@ class AES:
                 temp.append(int(plainText2D[i][j]) ^ int(key2D[i][j]))
             matrix2D.append(temp)
         return matrix2D
-    def decryption(self):
-        stateMatrixCol2D = self.transposeMatrix(self.ciperText)
-        print("Ciphertext in decryption")
-        self.printInHex(stateMatrixCol2D)
+    def decryption(self, cipherText):
+        stateMatrix1D = [ord(i) for i in cipherText]
+        stateMatrix2D = self.matrix1D_to_matrix2D(stateMatrix1D)
+        stateMatrixCol2D = self.transposeMatrix(stateMatrix2D)
 
         for i in range(0, self.Nr+1):
             if i == 0:
@@ -190,10 +187,10 @@ class AES:
                 if i != self.Nr:
                     stateMatrixCol2D = self.inverseMixColumns(stateMatrixCol2D)
 
-            print("After Decryption Round ", i)
-            self.printInHex(stateMatrixCol2D)
+            # print("After Decryption Round ", i)
+            # self.printInHex(stateMatrixCol2D)
         stateMatrixCol2D = self.transposeMatrix(stateMatrixCol2D)
-        self.retrieveText(stateMatrixCol2D)
+        return self.retrieveText(stateMatrixCol2D)
 
     def printInHex(self, matrix2D):
         for j in range(0, 4):
@@ -207,7 +204,7 @@ class AES:
         for i in range(0, 4):
             for j in range(0, 4):
                 retriveText += chr(matrix2D[i][j])
-        print("retrieveText = ", retriveText)
+        return retriveText
 
     def inverseShiftRows(self, matrix2D):
         temp = copy.deepcopy(matrix2D)
@@ -235,15 +232,30 @@ class AES:
                     bv3 = bv1.gf_multiply_modular(bv2, AES_modulus, 8)
                     result[i][j] = int(result[i][j]) ^ int(bv3)
         return result
+    def getCipherText(self, plainText):
+        cipherText = ""
+        while len(plainText) != 0:
+            temp = plainText[:16]
+            for i in range(16-len(temp)):
+                temp += "$"
+            cipherText += self.encryption(temp)
+            plainText = plainText[16:]
+        return cipherText
+
+    def getDeCipherText(self, cipherText):
+        deCipherText = ""
+        while len(cipherText) != 0:
+            temp = cipherText[:16]
+            deCipherText += self.decryption(temp)
+            cipherText = cipherText[16:]
+        return deCipherText
 
 if __name__ == "__main__":
-    key = "Thats my Kung Fu"
-    plainText = "Two One Nine Two"
+    key = "BUET CSE 1705043"
+    plainText = "This is a plain text which is to be encrypted. Lets run the code and see what happens"
     aes = AES(key)
     aes.printRoundKeys()
-    aes.setPlainText(plainText)
-
-    print("Calling Encryption from MAIN")
-    aes.encryption()
-    aes.getCipherText()
-    aes.decryption()
+    print("PlainText = \t", plainText)
+    cipherText = aes.getCipherText(plainText)
+    print("CipherText = \t", cipherText)
+    print("DeCipherText = \t", aes.getDeCipherText(cipherText))
