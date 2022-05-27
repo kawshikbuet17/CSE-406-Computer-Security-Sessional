@@ -62,7 +62,7 @@ class AES:
             word2D.append(temp)
         return word2D
     def g(self, word, roundNo):
-        temp = self.circularLeftShift(word, -1)
+        temp = self.circularShift(word, -1)
         temp = self.subBytes(temp)
         rc = 1
         rc = self.calculateRoundConst(roundNo, rc)
@@ -80,7 +80,7 @@ class AES:
                 elif roundNo > 1 and temp >= 0x80:
                     temp = (2 * temp) ^ 0x11B
             return temp
-    def circularLeftShift(self, word, times):
+    def circularShift(self, word, times):
         temp = deque(word)
         temp.rotate(times)
         return list(temp)
@@ -109,7 +109,6 @@ class AES:
             if i == 0:
                 stateMatrixCol2D = self.addRoundKey(stateMatrixCol2D, self.transposeMatrix(self.roundKeys[i]))
             else:
-
                 temp = []
                 for j in range(len(stateMatrixCol2D)):
                     temp.append(self.subBytes(stateMatrixCol2D[j]))
@@ -117,42 +116,16 @@ class AES:
                 for j in range(len(stateMatrixCol2D)):
                     for k in range(len(stateMatrixCol2D[j])):
                         stateMatrixCol2D[j][k] = int(stateMatrixCol2D[j][k])
-                # print("After subBytes")
-                # for j in range(0, 4):
-                #     for k in range(0, 4):
-                #         print(hex(stateMatrixCol2D[j][k])[2:], end="\t")
-                #     print()
-                # print()
+
                 stateMatrixCol2D = self.shiftRows(stateMatrixCol2D)
 
-                # print("After shiftRows (Mix Column Values)")
-                # for j in range(0, 4):
-                #     for k in range(0, 4):
-                #         print(hex(int(Dataset.Mixer[j][k]))[2:], end="\t")
-                #     print()
-                # print()
-                # print("After shiftRows (State)")
-                # for j in range(0, 4):
-                #     for k in range(0, 4):
-                #         print(hex(stateMatrixCol2D[j][k])[2:], end="\t")
-                #     print()
-                # print()
                 if i != self.Nr:
                     stateMatrixCol2D = self.mixColumns(stateMatrixCol2D)
-                    # print("After Mix Columns")
-                    # for j in range(0, 4):
-                    #     for k in range(0, 4):
-                    #         print(hex(stateMatrixCol2D[j][k])[2:], end="\t")
-                    #     print()
-                    # print()
                 stateMatrixCol2D = self.addRoundKey(stateMatrixCol2D, self.transposeMatrix(self.roundKeys[i]))
             print("After Round ", i)
-            for j in range(0, 4):
-                for k in range(0, 4):
-                    print(hex(stateMatrixCol2D[j][k])[2:], end="\t")
-                print()
-            print()
+            self.printInHex(stateMatrixCol2D)
         self.ciperText = self.transposeMatrix(stateMatrixCol2D)
+        self.retrieveText(self.ciperText)
 
     def getCipherText(self):
         print("Ciphertext")
@@ -163,7 +136,7 @@ class AES:
     def shiftRows(self, matrix2D):
         temp = copy.deepcopy(matrix2D)
         for i in range(len(temp)):
-            temp[i] = self.circularLeftShift(matrix2D[i], -i)
+            temp[i] = self.circularShift(matrix2D[i], -i)
         return temp
 
     def mixColumns(self, matrix2D):
@@ -171,14 +144,11 @@ class AES:
         for i in range(len(Dataset.Mixer)):
             for j in range(len(matrix2D[0])):
                 for k in range(len(matrix2D[0])):
-                    # print(i,j, " = ", i,j, " XOR (", i, k, " DOT ", k, j, ")")
                     AES_modulus = BitVector(bitstring='100011011')
                     bv1 = Dataset.Mixer[i][k]
                     bv2 = BitVector(hexstring=hex(matrix2D[k][j])[2:])
                     bv3 = bv1.gf_multiply_modular(bv2, AES_modulus, 8)
                     result[i][j] = int(result[i][j]) ^ int(bv3)
-                # print("result = [",i,j,"]", result[i][j])
-        # print(result)
         return result
 
     def transposeMatrix(self, matrix):
@@ -190,17 +160,81 @@ class AES:
         return temp
 
     def addRoundKey(self, plainText2D, key2D):
-        # print("plainText2D", plainText2D)
-        # print("key2D", key2D)
         matrix2D = []
         for i in range(4):
             temp = []
             for j in range(4):
-                temp.append(plainText2D[i][j] ^ key2D[i][j])
+                temp.append(int(plainText2D[i][j]) ^ int(key2D[i][j]))
             matrix2D.append(temp)
         return matrix2D
     def decryption(self):
-        return 1
+        stateMatrixCol2D = self.transposeMatrix(self.ciperText)
+        print("Ciphertext in decryption")
+        self.printInHex(stateMatrixCol2D)
+
+        for i in range(0, self.Nr+1):
+            if i == 0:
+                stateMatrixCol2D = self.addRoundKey(stateMatrixCol2D, self.transposeMatrix(self.roundKeys[self.Nr - i]))
+            else:
+                for j in range(len(stateMatrixCol2D)):
+                    for k in range(len(stateMatrixCol2D[j])):
+                        stateMatrixCol2D[j][k] = int(stateMatrixCol2D[j][k])
+                stateMatrixCol2D = self.inverseShiftRows(stateMatrixCol2D)
+
+                temp = []
+                for j in range(len(stateMatrixCol2D)):
+                    temp.append(self.inverseSubBytes(stateMatrixCol2D[j]))
+                stateMatrixCol2D = temp
+                stateMatrixCol2D = self.addRoundKey(stateMatrixCol2D, self.transposeMatrix(self.roundKeys[self.Nr-i]))
+
+                if i != self.Nr:
+                    stateMatrixCol2D = self.inverseMixColumns(stateMatrixCol2D)
+
+            print("After Decryption Round ", i)
+            self.printInHex(stateMatrixCol2D)
+        stateMatrixCol2D = self.transposeMatrix(stateMatrixCol2D)
+        self.retrieveText(stateMatrixCol2D)
+
+    def printInHex(self, matrix2D):
+        for j in range(0, 4):
+            for k in range(0, 4):
+                print(hex(matrix2D[j][k])[2:], end="\t")
+            print()
+        print()
+
+    def retrieveText(self, matrix2D):
+        retriveText = ""
+        for i in range(0, 4):
+            for j in range(0, 4):
+                retriveText += chr(matrix2D[i][j])
+        print("retrieveText = ", retriveText)
+
+    def inverseShiftRows(self, matrix2D):
+        temp = copy.deepcopy(matrix2D)
+        for i in range(len(temp)):
+            temp[i] = self.circularShift(matrix2D[i], i)
+        return temp
+    def inverseSubBytes(self, word):
+        temp = []
+        for i in word:
+            b = BitVector(hexstring=hex(i)[2:])
+            intVal = b.intValue()
+            s = Dataset.InvSbox[intVal]
+            s = BitVector(intVal=s, size=8)
+            temp.append(s)
+        return temp
+
+    def inverseMixColumns(self, matrix2D):
+        result = [[0 for i in range(len(matrix2D))] for j in range(len(matrix2D))]
+        for i in range(len(Dataset.Mixer)):
+            for j in range(len(matrix2D[0])):
+                for k in range(len(matrix2D[0])):
+                    AES_modulus = BitVector(bitstring='100011011')
+                    bv1 = Dataset.InvMixer[i][k]
+                    bv2 = BitVector(hexstring=hex(matrix2D[k][j])[2:])
+                    bv3 = bv1.gf_multiply_modular(bv2, AES_modulus, 8)
+                    result[i][j] = int(result[i][j]) ^ int(bv3)
+        return result
 
 if __name__ == "__main__":
     key = "Thats my Kung Fu"
@@ -212,3 +246,4 @@ if __name__ == "__main__":
     print("Calling Encryption from MAIN")
     aes.encryption()
     aes.getCipherText()
+    aes.decryption()
