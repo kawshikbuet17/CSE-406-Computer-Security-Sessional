@@ -1,8 +1,5 @@
-
-# Large Prime Generation for RSA
 import random
 
-# Pre generated primes
 first_primes_list = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29,
                      31, 37, 41, 43, 47, 53, 59, 61, 67,
                      71, 73, 79, 83, 89, 97, 101, 103,
@@ -12,22 +9,14 @@ first_primes_list = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29,
                      227, 229, 233, 239, 241, 251, 257,
                      263, 269, 271, 277, 281, 283, 293,
                      307, 311, 313, 317, 331, 337, 347, 349]
- 
-
 
 def nBitRandom(n):
     return random.randrange(2**(n-1)+1, 2**n - 1)
 
 
 def getLowLevelPrime(n):
-    '''Generate a prime candidate divisible
-    by first primes'''
     while True:
-        # Obtain a random number
         pc = nBitRandom(n)
- 
-         # Test divisibility by pre-generated
-         # primes
         for divisor in first_primes_list:
             if pc % divisor == 0 and divisor**2 <= pc:
                 break
@@ -35,7 +24,6 @@ def getLowLevelPrime(n):
 
 
 def isMillerRabinPassed(mrc):
-    '''Run 20 iterations of Rabin Miller Primality test'''
     maxDivisionsByTwo = 0
     ec = mrc-1
     while ec % 2 == 0:
@@ -50,8 +38,7 @@ def isMillerRabinPassed(mrc):
             if pow(round_tester, 2**i * ec, mrc) == mrc-1:
                 return False
         return True
- 
-    # Set number of trials here
+
     numberOfRabinTrials = 20
     for i in range(numberOfRabinTrials):
         round_tester = random.randrange(2, mrc)
@@ -62,7 +49,6 @@ def isMillerRabinPassed(mrc):
 
 def generatePrime(n):
     while True:
-        n = 128
         prime_candidate = getLowLevelPrime(n)
         if not isMillerRabinPassed(prime_candidate):
             continue
@@ -71,6 +57,6 @@ def generatePrime(n):
 
 
 if __name__ == '__main__':
-    print(generatePrime(128))
+    print(generatePrime(1024))
 
 

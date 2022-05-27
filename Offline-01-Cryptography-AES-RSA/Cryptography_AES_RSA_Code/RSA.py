@@ -57,34 +57,31 @@ class RSA:
         return int(e), int(d), int(n)
 
 
-    def ApowBmodM(self, x, y, m):
+    def XpowYmodM(self, x, y, m):
         res = 1;
         x = x % m
-
         while y != 0:
             if y & 1 != 0:
                 res = (res * (x % m)) % m
             y = y >> 1
             x = (((x % m) * (x % m))) % m
-        #         print(res)
-        #     print("final res ", res)
         return (res % m) % m
 
     def encryption(self, P, e, n):
-        return self.ApowBmodM(P,e,n)
+        return self.XpowYmodM(P, e, n)
 
     def decryption(self, C, d, n):
-        return self.ApowBmodM(C,d,n)
+        return self.XpowYmodM(C, d, n)
 
 
 if __name__ == '__main__':
     rsa = RSA()
-    e, d, n = rsa.rsaKeyGeneration(128)
+    e, d, n = rsa.rsaKeyGeneration(16)
     print("e = ", e)
     print("d = ", d)
     print("n = ", n)
 
-    plainText = input()
+    plainText = "This is a plain text which is to be encrypted. Lets run the code and see what happens"
     cipherText = []
     for ch in plainText:
         ch = ord(ch)

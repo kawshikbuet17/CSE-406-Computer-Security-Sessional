@@ -237,7 +237,7 @@ class AES:
         while len(plainText) != 0:
             temp = plainText[:16]
             for i in range(16-len(temp)):
-                temp += "$"
+                temp += " "
             cipherText += self.encryption(temp)
             plainText = plainText[16:]
         return cipherText
