@@ -13,7 +13,7 @@ class AES:
             self.key += " "
         self.Nr = 10
 
-    def setRoundKeys(self):
+    def keyScheduling(self):
         byteMatrix1D = [ord(i) for i in self.key]
         word2D = self.matrix1D_to_matrix2D(byteMatrix1D)
         self.roundKeys = self.keyExpansion(word2D, self.Nr)
@@ -208,6 +208,18 @@ class AES:
             print()
         print()
 
+    def asciiToHexString(self, text):
+        string = ""
+        lst = [hex(ord(i))[2:] for i in text]
+        for i in lst:
+            if len(i)==1:
+                string+="0"
+                string+=i
+            else:
+                string+=i
+            string+=" "
+        return string
+
     def retrieveText(self, matrix2D):
         retriveText = ""
         for i in range(0, 4):
@@ -262,23 +274,42 @@ class AES:
         return deCipherText
 
 if __name__ == "__main__":
-    key = "BUET CSE 1705043"
-    plainText = "This is a plain text which is to be encrypted. Lets run the code and see what happens"
-    print("PlainText = \t", plainText)
-
+    plainText = "CanTheyDoTheirFest?"
+    key = "BUET CSE17 Batch"
 
     aes = AES(key)
+
+    print("Plain Text:")
+    print(plainText, "(ASCII) length =", len(plainText))
+    print(aes.asciiToHexString(plainText), "(HEX)")
+    print()
+
+    print("Key:")
+    print(key, "(ASCII) length =", len(key))
+    print(aes.asciiToHexString(key), "(HEX)")
+    print()
+
     time1 = time.time_ns()
-    aes.setRoundKeys()
+    aes.keyScheduling()
     time2 = time.time_ns()
     # aes.printRoundKeys()
+
+    print("Cipher Text:")
     cipherText = aes.getCipherText(plainText)
-    print("CipherText = \t", cipherText)
+    print(cipherText, "(ASCII) length =", len(cipherText))
+    print(aes.asciiToHexString(cipherText), "(HEX)")
+    print()
+
     time3 = time.time_ns()
-    print("DeCipherText = \t", aes.getDeCipherText(cipherText))
+
+    print("Deciphered Text:")
+    decipherText = aes.getDeCipherText(cipherText)
+    print(aes.asciiToHexString(decipherText), "(HEX)")
+    print(decipherText, "(ASCII) length =", len(decipherText))
+    print()
+
     time4 = time.time_ns()
 
-    print("Round Keys Generation Time =\t", time2-time1, "ns")
-    print("CipherText Generation Time =\t", time3 - time2, "ns")
-    print("DecipherText Generation Time =\t", time4 - time3, "ns")
-    print("Total Time =", time4 - time1, "ns")
+    print("Key Scheduling =", time2-time1, "ns")
+    print("Encryption Time =", time3 - time2, "ns")
+    print("Decryption Time =", time4 - time3, "ns")

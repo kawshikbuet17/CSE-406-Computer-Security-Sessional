@@ -82,24 +82,23 @@ class RSA:
 if __name__ == '__main__':
     rsa = RSA()
     e, d, n = rsa.rsaKeyGeneration(128)
-    print("e = ", e)
-    print("d = ", d)
-    print("n = ", n)
+    print("Public Key = {", e,",",n,"}")
+    print("Private Key = {", d, ",", n,"}")
 
     plainText = "This is a plain text which is to be encrypted. Lets run the code and see what happens"
     print("PlainText =", plainText)
-
+    print()
     cipherText = []
     for ch in plainText:
         ch = ord(ch)
         cipherText.append(rsa.encryption(ch, e, n))
     print("After Encryption = ", cipherText)
-
+    print()
     retrieveText = ""
     for ch in cipherText:
         retrieveText += chr(rsa.decryption(ch, d, n))
     print("After Decryption = ", retrieveText)
-
+    print()
     for k in [16, 32, 64, 128]:
         time1 = time.time_ns()
         e, d, n = rsa.rsaKeyGeneration(k)
@@ -113,8 +112,8 @@ if __name__ == '__main__':
         for ch in cipherText:
             retrieveText += chr(rsa.decryption(ch, d, n))
         time4 = time.time_ns()
-
-        print("K =", k, "Key Generation time\t", time2-time1, "ns")
-        print("K =", k, "Encryption time\t", time3 - time2, "ns")
-        print("K =", k, "Decryption time\t", time4 - time3, "ns")
-        print("K =", k, "Total time\t", time4-time1, "ns")
+        print("K =", k)
+        print("Key Generation time =", time2-time1, "ns")
+        print("Encryption time =", time3 - time2, "ns")
+        print("Decryption time =", time4 - time3, "ns")
+        print()

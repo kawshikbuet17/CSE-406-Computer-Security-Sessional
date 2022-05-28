@@ -7,11 +7,10 @@ def getAESkey(cipherTextList):
     with open("Don't Open this/PRK.txt") as f:
         d = f.readline()
         d = int(d)
-        print("d =", d)
         n = f.readline()
         n = int(n)
-        print("n =", n)
         f.close()
+        print("PRK from file =", d,",", n)
         rsa = RSA()
         aesKey = ""
         for ch in cipherTextList:
@@ -30,14 +29,22 @@ cipherText = str(cipherText)
 cipherTextList = s.recv(1024).decode()
 cipherTextList = cipherTextList.split(" ")
 cipherTextList = list(map(int, cipherTextList))
-# print(cipherTextList)
+print("Received Encrypted AES Key = ", cipherTextList)
+print()
+
+publicKeyOfRsa = s.recv(1024).decode()
+print("Received PUK =", publicKeyOfRsa)
+print()
 
 aesKey = getAESkey(cipherTextList)
 print("aesKey retrieve =", aesKey)
+print()
+
 aes = AES(aesKey)
-aes.setRoundKeys()
+aes.keyScheduling()
 decipherText = aes.getDeCipherText(cipherText)
 print("DecipherText =", decipherText)
+print()
 
 folderPath = """Don't Open this"""
 f = open(str(folderPath)+"/DPT.txt", "w")

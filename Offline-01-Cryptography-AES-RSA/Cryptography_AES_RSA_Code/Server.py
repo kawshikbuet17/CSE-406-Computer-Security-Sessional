@@ -10,7 +10,7 @@ def createFolder(folderPath):
 
 def aesCipherText(plainText, aesKey):
     aes = AES(aesKey)
-    aes.setRoundKeys()
+    aes.keyScheduling()
     return aes.getCipherText(plainText)
 
 def rsaCipherText(aesKey):
@@ -43,29 +43,52 @@ if __name__=="__main__":
         print ('Got connection from', addr )
 
         plainText = "This is a plain text which is to be encrypted. Lets run the code and see what happens"
-        aesKey = "BUET CSE 1705043"
-        cipherText = aesCipherText(plainText, aesKey)
+        print("Plain Text:")
+        print(plainText)
+        print()
 
+        aesKey = "BUET CSE17 Batch"
+        print("AES Key:")
+        print(aesKey)
+        print()
+
+        cipherText = aesCipherText(plainText, aesKey)
+        print("Sending CipherText:")
+        print(cipherText)
+        print()
         c.send(cipherText.encode())
 
         cipherTextList, e, d, n = rsaCipherText(aesKey)
         f = open(str(folderPath)+"/PRK.txt", "w")
         f.write(str(d) + "\n" + str(n))
         f.close()
+        print("PRK written in Folder", str(folderPath)+"/PRK.txt")
+        print()
+
         temp = ""
         for i in range(len(cipherTextList)):
             temp += str(cipherTextList[i])
             if i != len(cipherTextList)-1:
                 temp+=" "
         # print("to send = ", temp)
+        print("Sending Encrypted AES Key:")
+        print(temp)
+        print()
         c.send(temp.encode())
+
+        print("Sending RSA Public Key:")
+        print((str(e)+","+str(n)))
+        print()
+        c.send((str(e)+","+str(n)).encode())
+
+        print("Matching DPT and Original Plain Text")
         ack = c.recv(1024).decode()
         if ack == "File Write Done":
             with open("Don't Open this/DPT.txt") as f:
                 plainText = plainText.split("\n")
                 lines = f.readlines()
-                # print("Plain", plainText)
-                # print("lines", lines)
+                print("Plain Text ->", plainText)
+                print("DPT ->", lines)
                 flag = True
                 if len(plainText) != len(lines):
                     flag = False
@@ -76,9 +99,9 @@ if __name__=="__main__":
                             flag = False
                             break
                 if flag == True:
-                    print("Data sent successfully")
+                    print("Matched")
                 else:
-                    print("Data sent failed")
+                    print("Some Error Occured")
                 f.close()
         c.close()
         break
