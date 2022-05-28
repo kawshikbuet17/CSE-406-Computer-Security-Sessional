@@ -1,4 +1,5 @@
 import copy
+import time
 from collections import deque
 
 from BitVector import BitVector
@@ -7,18 +8,16 @@ import Dataset
 
 class AES:
     def __init__(self, key):
-        self.key = key
-        keySize = 8 * len(key.encode('utf-8'))
-        if keySize == 128:
-            self.Nr = 10
-        else:
-            self.Nr = 10
-        self.setKey(key)
+        self.key = key[:16]
+        for i in range(16 - len(self.key)):
+            self.key += " "
+        self.Nr = 10
 
-    def setKey(self, key):
-        byteMatrix1D = [ord(i) for i in key]
+    def setRoundKeys(self):
+        byteMatrix1D = [ord(i) for i in self.key]
         word2D = self.matrix1D_to_matrix2D(byteMatrix1D)
         self.roundKeys = self.keyExpansion(word2D, self.Nr)
+
     def printRoundKeys(self):
         for i in range(0, self.Nr+1):
             print("round ",i, end="->\t")
@@ -26,6 +25,7 @@ class AES:
                 for k in range(0, 4):
                     print(hex(self.roundKeys[i][j][k])[2:], end="\t")
             print()
+
     def keyExpansion(self, word2D, Nr):
         roundKeys = []
         for i in range(0, Nr+1):
@@ -34,6 +34,7 @@ class AES:
             else:
                 roundKeys.append(self.generateRoundKey(i, roundKeys[-1]))
         return roundKeys
+
     def generateRoundKey(self, roundNo, word2D):
         if roundNo == 0:
             return word2D
@@ -45,11 +46,13 @@ class AES:
                 else:
                     temp.append(self.xorList(word2D[i], temp[-1]))
             return temp
+
     def xorList(self, list1, list2):
         temp = []
         for i in range(0, len(list1)):
             temp.append(list1[i] ^ list2[i])
         return temp
+
     def matrix1D_to_matrix2D(self, matrix1D):
         word2D = []
         for i in range(0, 4):
@@ -58,6 +61,7 @@ class AES:
                 temp.append(matrix1D[i*4 + j])
             word2D.append(temp)
         return word2D
+
     def g(self, word, roundNo):
         temp = self.circularShift(word, -1)
         temp = self.subBytes(temp)
@@ -66,6 +70,7 @@ class AES:
         const = [rc, 0, 0, 0]
         temp = self.addRoundConst(temp, const)
         return temp
+
     def calculateRoundConst(self, roundNo, rc):
         temp = rc
         if roundNo == 1:
@@ -77,15 +82,18 @@ class AES:
                 elif roundNo > 1 and temp >= 0x80:
                     temp = (2 * temp) ^ 0x11B
             return temp
+
     def circularShift(self, word, times):
         temp = deque(word)
         temp.rotate(times)
         return list(temp)
+
     def addRoundConst(self, word, const):
         temp = word
         for i in range(0, len(word)):
             temp[i] = int(temp[i]) ^ int(const[i])
         return temp
+
     def subBytes(self, word):
         temp = []
         for i in word:
@@ -95,7 +103,6 @@ class AES:
             s = BitVector(intVal=s, size=8)
             temp.append(s)
         return temp
-
 
     def encryption(self, plainText):
         stateMatrix1D = [ord(i) for i in plainText]
@@ -130,6 +137,7 @@ class AES:
             for k in range(0, 4):
                 print(hex(cipherText[j][k])[2:], end="\t")
         print()
+
     def shiftRows(self, matrix2D):
         temp = copy.deepcopy(matrix2D)
         for i in range(len(temp)):
@@ -164,6 +172,7 @@ class AES:
                 temp.append(int(plainText2D[i][j]) ^ int(key2D[i][j]))
             matrix2D.append(temp)
         return matrix2D
+
     def decryption(self, cipherText):
         stateMatrix1D = [ord(i) for i in cipherText]
         stateMatrix2D = self.matrix1D_to_matrix2D(stateMatrix1D)
@@ -211,6 +220,7 @@ class AES:
         for i in range(len(temp)):
             temp[i] = self.circularShift(matrix2D[i], i)
         return temp
+
     def inverseSubBytes(self, word):
         temp = []
         for i in word:
@@ -232,6 +242,7 @@ class AES:
                     bv3 = bv1.gf_multiply_modular(bv2, AES_modulus, 8)
                     result[i][j] = int(result[i][j]) ^ int(bv3)
         return result
+
     def getCipherText(self, plainText):
         cipherText = ""
         while len(plainText) != 0:
@@ -253,9 +264,21 @@ class AES:
 if __name__ == "__main__":
     key = "BUET CSE 1705043"
     plainText = "This is a plain text which is to be encrypted. Lets run the code and see what happens"
-    aes = AES(key)
-    aes.printRoundKeys()
     print("PlainText = \t", plainText)
+
+
+    aes = AES(key)
+    time1 = time.time_ns()
+    aes.setRoundKeys()
+    time2 = time.time_ns()
+    # aes.printRoundKeys()
     cipherText = aes.getCipherText(plainText)
     print("CipherText = \t", cipherText)
+    time3 = time.time_ns()
     print("DeCipherText = \t", aes.getDeCipherText(cipherText))
+    time4 = time.time_ns()
+
+    print("Round Keys Generation Time =\t", time2-time1, "ns")
+    print("CipherText Generation Time =\t", time3 - time2, "ns")
+    print("DecipherText Generation Time =\t", time4 - time3, "ns")
+    print("Total Time =", time4 - time1, "ns")

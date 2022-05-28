@@ -35,6 +35,7 @@ cipherTextList = list(map(int, cipherTextList))
 aesKey = getAESkey(cipherTextList)
 print("aesKey retrieve =", aesKey)
 aes = AES(aesKey)
+aes.setRoundKeys()
 print("DecipherText =", aes.getDeCipherText(cipherText))
 s.close()
 

@@ -2,7 +2,6 @@ import socket
 import os
 from AES import *
 from RSA import *
-import pickle
 
 def createFolder(folderPath):
     mypath = folderPath
@@ -11,6 +10,7 @@ def createFolder(folderPath):
 
 def aesCipherText(plainText, aesKey):
     aes = AES(aesKey)
+    aes.setRoundKeys()
     return aes.getCipherText(plainText)
 
 def rsaCipherText(aesKey):
