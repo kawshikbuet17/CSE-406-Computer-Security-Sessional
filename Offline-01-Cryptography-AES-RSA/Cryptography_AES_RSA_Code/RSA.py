@@ -1,6 +1,6 @@
 import time
 
-import LargePrimeGenerator
+from BitVector import BitVector
 import math
 import random
 
@@ -14,36 +14,39 @@ class RSA:
             return 0
 
         while (a > 1):
-            # q is quotient
             q = a // m
-
             t = m
-
-            # m is remainder now, process
-            # same as Euclid's algo
             m = a % m
             a = t
             t = y
 
-            # Update x and y
             y = x - q * y
             x = t
 
-        # Make x positive
         if (x < 0):
             x = x + m0
-
         return x
 
-
     def rsaKeyGeneration(self, k):
-        p = LargePrimeGenerator.generatePrime(k / 2)
-        q = LargePrimeGenerator.generatePrime(k / 2)
+        bv = BitVector(intVal=0)
+        bv = bv.gen_random_bits(k // 2)
+        while bv.test_for_primality() == 0:
+            bv = bv.gen_random_bits(k//2)
+        p = bv.intValue()
+
+        bv = bv.gen_random_bits(k // 2)
+        while bv.test_for_primality() == 0:
+            bv = bv.gen_random_bits(k // 2)
+        q = bv.intValue()
+
         #     p = 31337
         #     q = 31357
 
         while p == q:
-            q = LargePrimeGenerator.generatePrime(k / 2)
+            bv = bv.gen_random_bits(k // 2)
+            while bv.test_for_primality() == 0:
+                bv = bv.gen_random_bits(k // 2)
+            q = bv.intValue()
 
         n = p * q
         phi_n = (p - 1) * (q - 1)
@@ -67,7 +70,7 @@ class RSA:
                 res = (res * (x % m)) % m
             y = y >> 1
             x = (((x % m) * (x % m))) % m
-        return (res % m) % m
+        return res % m
 
     def encryption(self, P, e, n):
         return self.XpowYmodM(P, e, n)

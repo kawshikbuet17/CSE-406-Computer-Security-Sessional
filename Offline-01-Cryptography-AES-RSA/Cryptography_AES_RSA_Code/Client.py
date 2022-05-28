@@ -4,7 +4,7 @@ from RSA import RSA
 
 
 def getAESkey(cipherTextList):
-    with open("Don't Open this/rsa.txt") as f:
+    with open("Don't Open this/PRK.txt") as f:
         d = f.readline()
         d = int(d)
         print("d =", d)
@@ -40,7 +40,7 @@ decipherText = aes.getDeCipherText(cipherText)
 print("DecipherText =", decipherText)
 
 folderPath = """Don't Open this"""
-f = open(str(folderPath)+"/decipherText.txt", "w")
+f = open(str(folderPath)+"/DPT.txt", "w")
 f.write(decipherText)
 f.close()
 s.send("File Write Done".encode())

@@ -49,7 +49,7 @@ if __name__=="__main__":
         c.send(cipherText.encode())
 
         cipherTextList, e, d, n = rsaCipherText(aesKey)
-        f = open(str(folderPath)+"/rsa.txt", "w")
+        f = open(str(folderPath)+"/PRK.txt", "w")
         f.write(str(d) + "\n" + str(n))
         f.close()
         temp = ""
@@ -61,11 +61,11 @@ if __name__=="__main__":
         c.send(temp.encode())
         ack = c.recv(1024).decode()
         if ack == "File Write Done":
-            with open("Don't Open this/decipherText.txt") as f:
+            with open("Don't Open this/DPT.txt") as f:
                 plainText = plainText.split("\n")
                 lines = f.readlines()
-                print("Plain", plainText)
-                print("lines", lines)
+                # print("Plain", plainText)
+                # print("lines", lines)
                 flag = True
                 if len(plainText) != len(lines):
                     flag = False
