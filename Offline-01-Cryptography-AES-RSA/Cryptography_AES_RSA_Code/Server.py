@@ -59,5 +59,26 @@ if __name__=="__main__":
                 temp+=" "
         # print("to send = ", temp)
         c.send(temp.encode())
+        ack = c.recv(1024).decode()
+        if ack == "File Write Done":
+            with open("Don't Open this/decipherText.txt") as f:
+                plainText = plainText.split("\n")
+                lines = f.readlines()
+                print("Plain", plainText)
+                print("lines", lines)
+                flag = True
+                if len(plainText) != len(lines):
+                    flag = False
+                else:
+                    for i in range(len(plainText)):
+                        lines[i] = lines[i].rstrip()
+                        if plainText[i] != lines[i]:
+                            flag = False
+                            break
+                if flag == True:
+                    print("Data sent successfully")
+                else:
+                    print("Data sent failed")
+                f.close()
         c.close()
         break

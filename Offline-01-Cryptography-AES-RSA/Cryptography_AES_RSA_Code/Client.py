@@ -36,6 +36,13 @@ aesKey = getAESkey(cipherTextList)
 print("aesKey retrieve =", aesKey)
 aes = AES(aesKey)
 aes.setRoundKeys()
-print("DecipherText =", aes.getDeCipherText(cipherText))
+decipherText = aes.getDeCipherText(cipherText)
+print("DecipherText =", decipherText)
+
+folderPath = """Don't Open this"""
+f = open(str(folderPath)+"/decipherText.txt", "w")
+f.write(decipherText)
+f.close()
+s.send("File Write Done".encode())
 s.close()
 
