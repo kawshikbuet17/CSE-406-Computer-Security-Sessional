@@ -1,1 +1,2 @@
-This is a plain text which is to be encrypted. Lets run the code and see what happens           
+This is a plain text which is to be encrypted. 
+Lets run the code and see what happens. \n is also handled      

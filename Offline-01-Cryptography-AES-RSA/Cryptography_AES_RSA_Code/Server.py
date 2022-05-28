@@ -42,7 +42,7 @@ if __name__=="__main__":
         c, addr = s.accept()
         print ('Got connection from', addr )
 
-        plainText = "This is a plain text which is to be encrypted. Lets run the code and see what happens"
+        plainText = "This is a plain text which is to be encrypted. \nLets run the code and see what happens. \\n is also handled"
         print("Plain Text:")
         print(plainText)
         print()
@@ -69,7 +69,7 @@ if __name__=="__main__":
         for i in range(len(cipherTextList)):
             temp += str(cipherTextList[i])
             if i != len(cipherTextList)-1:
-                temp+=" "
+                temp+=","
         # print("to send = ", temp)
         print("Sending Encrypted AES Key:")
         print(temp)
@@ -85,19 +85,15 @@ if __name__=="__main__":
         ack = c.recv(1024).decode()
         if ack == "File Write Done":
             with open("Don't Open this/DPT.txt") as f:
-                plainText = plainText.split("\n")
                 lines = f.readlines()
+                combinedLines = ""
+                for i in lines:
+                    combinedLines+=i
                 print("Plain Text ->", plainText)
-                print("DPT ->", lines)
+                print("DPT ->", combinedLines)
                 flag = True
-                if len(plainText) != len(lines):
+                if plainText != combinedLines.rstrip():
                     flag = False
-                else:
-                    for i in range(len(plainText)):
-                        lines[i] = lines[i].rstrip()
-                        if plainText[i] != lines[i]:
-                            flag = False
-                            break
                 if flag == True:
                     print("Matched")
                 else:

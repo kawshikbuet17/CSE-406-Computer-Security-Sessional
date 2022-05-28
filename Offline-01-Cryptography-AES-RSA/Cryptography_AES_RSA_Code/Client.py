@@ -10,7 +10,9 @@ def getAESkey(cipherTextList):
         n = f.readline()
         n = int(n)
         f.close()
-        print("PRK from file =", d,",", n)
+        print("PRK from file:")
+        print("{", d,",", n,"}")
+        print()
         rsa = RSA()
         aesKey = ""
         for ch in cipherTextList:
@@ -25,25 +27,32 @@ s.connect(('127.0.0.1', port))
 
 cipherText = s.recv(1024).decode()
 cipherText = str(cipherText)
+print("Received AES CipherText:")
+print(cipherText)
+print()
 
 cipherTextList = s.recv(1024).decode()
-cipherTextList = cipherTextList.split(" ")
+cipherTextList = cipherTextList.split(",")
 cipherTextList = list(map(int, cipherTextList))
-print("Received Encrypted AES Key = ", cipherTextList)
+print("Received Encrypted AES Key:")
+print(cipherTextList)
 print()
 
 publicKeyOfRsa = s.recv(1024).decode()
-print("Received PUK =", publicKeyOfRsa)
+print("Received PUK:")
+print("{", publicKeyOfRsa, "}")
 print()
 
 aesKey = getAESkey(cipherTextList)
-print("aesKey retrieve =", aesKey)
+print("aesKey retrieve:")
+print(aesKey)
 print()
 
 aes = AES(aesKey)
 aes.keyScheduling()
 decipherText = aes.getDeCipherText(cipherText)
-print("DecipherText =", decipherText)
+print("DecipherText:")
+print(decipherText)
 print()
 
 folderPath = """Don't Open this"""
